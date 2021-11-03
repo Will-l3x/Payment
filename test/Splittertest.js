@@ -3,15 +3,15 @@ const { ethers } = require('hardhat')
 
 describe('TokenPaymentSplitter Tests', () => {
     let deployer
-    let account1
-    let account2
-    let account3
-    let account4
+    let treasury
+    let RUBY
+    let BNFT
+    
     let testPaymentToken
     let nft
 
     beforeEach(async () => {
-        [deployer, account1, account2, account3, account4] = await ethers.getSigners()
+        [deployer, treasury, RUBY, BNFT] = await ethers.getSigners()
 
         const TestPaymentToken = await ethers.getContractFactory('ERC20PresetMinterPauser')
         testPaymentToken = await TestPaymentToken.deploy('TestPaymentToken', 'TPT')
@@ -23,8 +23,8 @@ describe('TokenPaymentSplitter Tests', () => {
 
         it('payment token is distributed evenly to multiple payees', async () => {
 
-            payeeAddressArray = [account1.address, account2.address, account3.address, account4.address]
-            payeeShareArray = [10, 10, 10, 10]
+            payeeAddressArray = [treasury.address, RUBY.address, BNFT.address]
+            payeeShareArray = [10, 10, 10]
 
             const NFT = await ethers.getContractFactory('NFT')
             nft = await NFT.deploy(
@@ -37,36 +37,34 @@ describe('TokenPaymentSplitter Tests', () => {
             await testPaymentToken.mint(nft.address, 100000)
 
             await nft
-                .connect(account1)
-                .release(account1.address)
+                .connect(treasury)
+                .release(treasury.address)
 
             await nft
-                .connect(account2)
-                .release(account2.address)
+                .connect(RUBY)
+                .release(RUBY.address)
 
             await nft
-                .connect(account3)
-                .release(account3.address)
+                .connect(BNFT)
+                .release(BNFT.address)
 
-            await nft
-                .connect(account4)
-                .release(account4.address)
+            
 
-            const account1TokenBalance = await testPaymentToken.balanceOf(account1.address)
-            const account2TokenBalance = await testPaymentToken.balanceOf(account2.address)
-            const account3TokenBalance = await testPaymentToken.balanceOf(account3.address)
-            const account4TokenBalance = await testPaymentToken.balanceOf(account4.address)
+            const treasuryTokenBalance = await testPaymentToken.balanceOf(treasury.address)
+            const RUBYTokenBalance = await testPaymentToken.balanceOf(RUBY.address)
+            const BNFTTokenBalance = await testPaymentToken.balanceOf(BNFT.address)
+           
 
-            expect(account1TokenBalance).to.equal(25000)
-            expect(account2TokenBalance).to.equal(25000)
-            expect(account3TokenBalance).to.equal(25000)
-            expect(account4TokenBalance).to.equal(25000)
+            expect(treasuryTokenBalance).to.equal(33333)
+            expect(RUBYTokenBalance).to.equal(33333)
+            expect(BNFTTokenBalance).to.equal(33333)
+            
         })
 
         it('payment token is distributed unevenly to multiple payees', async () => {
 
-            payeeAddressArray = [account1.address, account2.address, account3.address, account4.address]
-            payeeShareArray = [10, 5, 11, 7]
+            payeeAddressArray = [treasury.address, RUBY.address, BNFT.address]
+            payeeShareArray = [10, 5, 11 ]
 
             const NFT = await ethers.getContractFactory('NFT')
             nft = await NFT.deploy(
@@ -79,41 +77,39 @@ describe('TokenPaymentSplitter Tests', () => {
             await testPaymentToken.mint(nft.address, 100000)
 
             await nft
-                .connect(account1)
-                .release(account1.address)
+                .connect(treasury)
+                .release(treasury.address)
 
             await nft
-                .connect(account2)
-                .release(account2.address)
+                .connect(RUBY)
+                .release(RUBY.address)
 
             await nft
-                .connect(account3)
-                .release(account3.address)
+                .connect(BNFT)
+                .release(BNFT.address)
 
-            await nft
-                .connect(account4)
-                .release(account4.address)
+            
 
             const nftTestPaymentTokenBalance = await testPaymentToken.balanceOf(
                 nft.address
             )
 
-            const account1TokenBalance = await testPaymentToken.balanceOf(account1.address)
-            const account2TokenBalance = await testPaymentToken.balanceOf(account2.address)
-            const account3TokenBalance = await testPaymentToken.balanceOf(account3.address)
-            const account4TokenBalance = await testPaymentToken.balanceOf(account4.address)
+            const treasuryTokenBalance = await testPaymentToken.balanceOf(treasury.address)
+            const RUBYTokenBalance = await testPaymentToken.balanceOf(RUBY.address)
+            const BNFTTokenBalance = await testPaymentToken.balanceOf(BNFT.address)
+            
 
-            expect(nftTestPaymentTokenBalance).to.equal(1)
-            expect(account1TokenBalance).to.equal(30303)
-            expect(account2TokenBalance).to.equal(15151)
-            expect(account3TokenBalance).to.equal(33333)
-            expect(account4TokenBalance).to.equal(21212)
+            expect(nftTestPaymentTokenBalance).to.equal(2)
+            expect(treasuryTokenBalance).to.equal(38461)
+            expect(RUBYTokenBalance).to.equal(19230)
+            expect(BNFTTokenBalance).to.equal(42307)
+            
         })
 
-        it('payment token is distributed unevenly to multiple payees with additional payment token sent to pool', async () => {
+        it('payment token is distributed unevenly to multiple payees with additional payment token sent to be burned ', async () => {
 
-            payeeAddressArray = [account1.address, account2.address, account3.address, account4.address]
-            payeeShareArray = [10, 5, 11, 7]
+            payeeAddressArray = [treasury.address, RUBY.address, BNFT.address]
+            payeeShareArray = [5, 5, 90,]
 
             const NFT = await ethers.getContractFactory('NFT')
             nft = await NFT.deploy(
@@ -126,45 +122,43 @@ describe('TokenPaymentSplitter Tests', () => {
             await testPaymentToken.mint(nft.address, 100000)
 
             await nft
-                .connect(account1)
-                .release(account1.address)
+                .connect(treasury)
+                .release(treasury.address)
 
             await nft
-                .connect(account2)
-                .release(account2.address)
+                .connect(RUBY)
+                .release(RUBY.address)
 
             await testPaymentToken.mint(nft.address, 100000)
 
             await nft
-                .connect(account3)
-                .release(account3.address)
+                .connect(BNFT)
+                .release(BNFT.address)
+
+            
 
             await nft
-                .connect(account4)
-                .release(account4.address)
+                .connect(treasury)
+                .release(treasury.address)
 
             await nft
-                .connect(account1)
-                .release(account1.address)
-
-            await nft
-                .connect(account2)
-                .release(account2.address)
+                .connect(RUBY)
+                .release(RUBY.address)
 
             const nftTestPaymentTokenBalance = await testPaymentToken.balanceOf(
                 nft.address
             )
 
-            const account1TokenBalance = await testPaymentToken.balanceOf(account1.address)
-            const account2TokenBalance = await testPaymentToken.balanceOf(account2.address)
-            const account3TokenBalance = await testPaymentToken.balanceOf(account3.address)
-            const account4TokenBalance = await testPaymentToken.balanceOf(account4.address)
+            const treasuryTokenBalance = await testPaymentToken.balanceOf(treasury.address)
+            const RUBYTokenBalance = await testPaymentToken.balanceOf(RUBY.address)
+            const BNFTTokenBalance = await testPaymentToken.balanceOf(BNFT.address)
+            
 
-            expect(nftTestPaymentTokenBalance).to.equal(1)
-            expect(account1TokenBalance).to.equal(60606)
-            expect(account2TokenBalance).to.equal(30303)
-            expect(account3TokenBalance).to.equal(66666)
-            expect(account4TokenBalance).to.equal(42424)
+            expect(nftTestPaymentTokenBalance).to.equal(0)
+            expect(treasuryTokenBalance).to.equal(10000)
+            expect(RUBYTokenBalance).to.equal(10000)
+            expect(BNFTTokenBalance).to.equal(180000)
+            
         })
 
     })
