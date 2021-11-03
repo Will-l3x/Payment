@@ -61,7 +61,7 @@ describe('TokenPaymentSplitter Tests', () => {
             
         })
 
-        it('payment token is distributed unevenly to multiple payees', async () => {
+        it('payment token is distributed unevenly to multiple winners', async () => {
 
             payeeAddressArray = [treasury.address, RUBY.address, BNFT.address]
             payeeShareArray = [10, 5, 11 ]
